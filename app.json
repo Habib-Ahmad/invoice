@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "invoice",
+    "slug": "invoice",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "invoice"
+}
