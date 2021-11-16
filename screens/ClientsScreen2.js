@@ -6,13 +6,14 @@ import {
 	Text,
 	StatusBar,
 	Platform,
-	ScrollView,
+	ScrollView
 } from 'react-native'
 import { useTheme } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/AntDesign'
+import IonIcon from 'react-native-vector-icons/Ionicons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const ClientsScreen = ({ navigation }) => {
+const ClientsScreen2 = ({ navigation }) => {
 	const [clients, setClients] = useState([])
 
 	const { colors } = useTheme()
@@ -21,7 +22,6 @@ const ClientsScreen = ({ navigation }) => {
 	const GetClientList = async () => {
 		const clientList = await AsyncStorage.getItem('clients')
 		clientList && setClients(JSON.parse(clientList))
-		console.log('get client list')
 	}
 
 	useEffect(() => {
@@ -31,9 +31,13 @@ const ClientsScreen = ({ navigation }) => {
 		return unsubscribe
 	}, [navigation])
 
-	const ViewClient = async (name) => {
-		await AsyncStorage.setItem('viewClientName', name)
-		navigation.navigate('ViewClient')
+	// useEffect(() => {
+	// 	GetClientList()
+	// }, [])
+
+	const AddClient = async (client) => {
+		await AsyncStorage.setItem('newInvoiceClient', JSON.stringify(client))
+		navigation.navigate('NewInvoice')
 	}
 
 	const styles = StyleSheet.create({
@@ -41,27 +45,27 @@ const ClientsScreen = ({ navigation }) => {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 			backgroundColor: colors.background,
-			position: 'relative',
+			position: 'relative'
 		},
 		scrollView: {
 			// flex: 1
 		},
 		header: {
 			flexDirection: 'row',
-			justifyContent: 'space-between',
+			alignItems: 'center',
 			backgroundColor: colors.background2,
 			paddingHorizontal: 20,
 			paddingVertical: 10,
 			borderBottomWidth: 1,
 			borderBottomColor: '#c9c9c9',
-			zIndex: 5,
+			zIndex: 5
 		},
 		headerText: {
 			fontSize: 22,
-			color: colors.text,
+			color: colors.text
 		},
 		clients: {
-			paddingTop: 40,
+			paddingTop: 40
 		},
 		client: {
 			flexDirection: 'row',
@@ -71,7 +75,7 @@ const ClientsScreen = ({ navigation }) => {
 			alignItems: 'center',
 			paddingHorizontal: 20,
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		logoWrapper: {
 			backgroundColor: 'pink',
@@ -80,18 +84,18 @@ const ClientsScreen = ({ navigation }) => {
 			borderRadius: 40,
 			justifyContent: 'center',
 			alignItems: 'center',
-			marginRight: 20,
+			marginRight: 20
 		},
 		logo: {
-			fontSize: 20,
+			fontSize: 20
 		},
 		detailsWrapper: {},
 		name: {
-			fontSize: 14,
+			fontSize: 14
 		},
 		email: {
 			color: '#636363',
-			fontSize: 12,
+			fontSize: 12
 		},
 		newInvoiceBtn: {
 			width: 60,
@@ -103,16 +107,27 @@ const ClientsScreen = ({ navigation }) => {
 			backgroundColor: '#009387',
 			alignItems: 'center',
 			justifyContent: 'center',
-			zIndex: 10,
+			zIndex: 10
 		},
 		newInvoiceBtnIcon: {
-			color: '#fff',
-		},
+			color: '#fff'
+		}
 	})
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
+				<TouchableOpacity
+					activeOpacity={0.9}
+					onPress={() => navigation.navigate('NewInvoice')}
+				>
+					<IonIcon
+						style={{ marginRight: 15 }}
+						name='close-outline'
+						color='#075E54'
+						size={25}
+					/>
+				</TouchableOpacity>
 				<Text style={styles.headerText}>Clients</Text>
 			</View>
 			<ScrollView style={styles.scrollView}>
@@ -120,10 +135,9 @@ const ClientsScreen = ({ navigation }) => {
 					{clients &&
 						clients.map((item, idx) => (
 							<TouchableOpacity
-								activeOpacity={0.8}
 								key={idx}
 								style={styles.client}
-								onPress={() => ViewClient(item.name)}
+								onPress={() => AddClient(item)}
 							>
 								<View style={styles.logoWrapper}>
 									<Text style={styles.logo}>
@@ -141,7 +155,7 @@ const ClientsScreen = ({ navigation }) => {
 				</View>
 			</ScrollView>
 			<TouchableOpacity
-				onPress={() => navigation.navigate('AddClient')}
+				onPress={() => navigation.navigate('AddClient2')}
 				style={styles.newInvoiceBtn}
 			>
 				<Icon style={styles.newInvoiceBtnIcon} name='plus' size={40} />
@@ -150,4 +164,4 @@ const ClientsScreen = ({ navigation }) => {
 	)
 }
 
-export default ClientsScreen
+export default ClientsScreen2

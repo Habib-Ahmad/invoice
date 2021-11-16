@@ -6,47 +6,83 @@ import {
 	StyleSheet,
 	TextInput,
 	StatusBar,
-	Platform,
+	Platform
 } from 'react-native'
 import * as Animatable from 'react-native-animatable'
-import Icon from 'react-native-vector-icons/Ionicons'
+import IonIcon from 'react-native-vector-icons/Ionicons'
+import AntDesign from 'react-native-vector-icons/AntDesign'
 import { useTheme } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const AddClientScreen = ({ navigation }) => {
+const EditClientScreen = ({ navigation }) => {
 	const [validation, setValidation] = useState({
 		isValidName: true,
 		isExistingName: false,
 		isValidMobile: true,
-		isValidEmail: true,
+		isValidEmail: true
 	})
 
 	const [data, setData] = useState({
 		name: '',
 		mobile: '',
-		email: '',
-		invoices: []
+		email: ''
 	})
 
 	const { colors } = useTheme()
 	const theme = useTheme()
 
-	const onChangeText = (val, id) => {
+	const GetClient = async () => {
+		const editClientName = await AsyncStorage.getItem('editClientName')
+
+		const clientsObject = await AsyncStorage.getItem('clients')
+		const clients = JSON.parse(clientsObject)
+
+		let editClient
+
+		clients.map(
+			(item) => item.name === editClientName && (editClient = item)
+		)
+
 		setData({
 			...data,
-			[id]: val,
+			name: editClient.name,
+			mobile: editClient.mobile,
+			email: editClient.email
 		})
+	}
+
+	useEffect(() => {
+		GetClient()
+	}, [])
+
+	const onChangeText = (val, id) => {
+		if (id === 'email') {
+			setData({
+				...data,
+				[id]: val.toLowerCase()
+			})
+		} else {
+			setData({
+				...data,
+				[id]: val
+			})
+		}
 	}
 
 	const HandleSave = async () => {
 		const clientListObject = await AsyncStorage.getItem('clients')
 		const clientList = JSON.parse(clientListObject)
+		const editClientName = await AsyncStorage.getItem('editClientName')
+
 		let clientNameList = []
 		let exisitingName = false
 
 		clientList && clientList.map((item) => clientNameList.push(item.name))
-		if (clientNameList.indexOf(data.name) !== -1) {
+
+		if (editClientName === data.name) {
+			exisitingName = false
+		} else if (clientNameList.indexOf(data.name) !== -1) {
 			exisitingName = true
 		} else {
 			exisitingName = false
@@ -63,22 +99,23 @@ const AddClientScreen = ({ navigation }) => {
 				isValidName: true,
 				isExistingName: false,
 				isValidMobile: true,
-				isValidEmail: true,
+				isValidEmail: true
 			})
 
 			let clientList = []
 			const clients = await AsyncStorage.getItem('clients')
+			const editClientName = await AsyncStorage.getItem('editClientName')
 
-			if (JSON.parse(clients) == null) {
-				await AsyncStorage.setItem(
-					'clients',
-					JSON.stringify(clientList)
-				)
-			} else {
-				clientList = JSON.parse(clients)
-			}
+			let index
 
-			clientList.push(data)
+			clientList = JSON.parse(clients)
+			clientList.map(
+				(item) =>
+					item.name === editClientName &&
+					(index = clientList.indexOf(item))
+			)
+			clientList.splice(index, 1, data)
+
 			await AsyncStorage.setItem('clients', JSON.stringify(clientList))
 			navigation.navigate('Clients')
 		} else {
@@ -104,7 +141,7 @@ const AddClientScreen = ({ navigation }) => {
 				isValidName: nameStatus,
 				isExistingName: existingNameStatus,
 				isValidMobile: mobileStatus,
-				isValidEmail: emailStatus,
+				isValidEmail: emailStatus
 			})
 		}
 	}
@@ -113,7 +150,7 @@ const AddClientScreen = ({ navigation }) => {
 		if (val.trim().length > 0) {
 			setValidation({
 				...validation,
-				[id]: true,
+				[id]: true
 			})
 		}
 	}
@@ -122,9 +159,8 @@ const AddClientScreen = ({ navigation }) => {
 		setValidation({
 			...validation,
 			isValidName: true,
-			isExistingName: false,
 			isValidMobile: true,
-			isValidEmail: true,
+			isValidEmail: true
 		})
 	}, [])
 
@@ -133,7 +169,7 @@ const AddClientScreen = ({ navigation }) => {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 			backgroundColor: colors.background,
-			position: 'relative',
+			position: 'relative'
 		},
 		scrollView: {
 			// flex: 1
@@ -146,17 +182,17 @@ const AddClientScreen = ({ navigation }) => {
 			paddingVertical: 10,
 			borderBottomWidth: 1,
 			borderBottomColor: '#c9c9c9',
-			zIndex: 5,
+			zIndex: 5
 		},
 		headerText: {
 			fontSize: 22,
-			color: colors.text,
+			color: colors.text
 		},
 		inputHeader: {
 			color: '#05375a',
 			fontSize: 16,
 			marginLeft: 10,
-			marginTop: 30,
+			marginTop: 30
 			// marginTop: Platform.OS === 'ios' ? 0 : -12,
 		},
 		inputWrapper: {
@@ -164,13 +200,13 @@ const AddClientScreen = ({ navigation }) => {
 			borderBottomWidth: 1,
 			borderBottomColor: '#d6d6d6',
 			paddingBottom: 5,
-			marginHorizontal: 10,
+			marginHorizontal: 10
 		},
 		input: {
 			flex: 1,
 			paddingLeft: 10,
 			color: '#05375a',
-			fontSize: 18,
+			fontSize: 18
 		},
 		signIn: {
 			marginTop: 30,
@@ -180,14 +216,14 @@ const AddClientScreen = ({ navigation }) => {
 			borderRadius: 10,
 			borderColor: '#075E54',
 			borderWidth: 1,
-			marginHorizontal: 20,
+			marginHorizontal: 20
 		},
 		errorMsg: {
 			color: '#FF0000',
 			fontSize: 14,
 			marginLeft: 20,
-			marginBottom: 5,
-		},
+			marginBottom: 5
+		}
 	})
 
 	return (
@@ -195,16 +231,16 @@ const AddClientScreen = ({ navigation }) => {
 			<View style={styles.header}>
 				<TouchableOpacity
 					activeOpacity={0.9}
-					onPress={() => navigation.navigate('Clients')}
+					onPress={() => navigation.navigate('ViewClient')}
 				>
-					<Icon
+					<AntDesign
 						style={{ marginRight: 15 }}
-						name='close-outline'
+						name='arrowleft'
 						color='#075E54'
 						size={25}
 					/>
 				</TouchableOpacity>
-				<Text style={styles.headerText}>Add Client</Text>
+				<Text style={styles.headerText}>Edit Client</Text>
 			</View>
 			{data.name ? (
 				<Animatable.Text
@@ -268,7 +304,6 @@ const AddClientScreen = ({ navigation }) => {
 			)}
 			<View style={styles.inputWrapper}>
 				<TextInput
-					autoCapitalize='none'
 					style={styles.input}
 					placeholder='Email'
 					value={data.email}
@@ -290,4 +325,4 @@ const AddClientScreen = ({ navigation }) => {
 	)
 }
 
-export default AddClientScreen
+export default EditClientScreen

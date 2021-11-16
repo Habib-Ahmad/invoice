@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useMemo, useReducer } from 'react'
-import { StyleSheet, View, ActivityIndicator } from 'react-native'
+import {
+	StyleSheet,
+	View,
+	ActivityIndicator,
+	Platform,
+	StatusBar,
+	SafeAreaView
+} from 'react-native'
 
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import {
@@ -16,6 +23,7 @@ import {
 import RootStackScreen from './screens/RootStackScreen'
 import DrawerContent from './screens/DrawerContent'
 import MainTabScreen from './screens/MainTabScreen'
+import MainStackScreen from './screens/MainStackScreen'
 import SupportScreen from './screens/SupportScreen'
 import SettingsScreen from './screens/SettingsScreen'
 import BookmarkScreen from './screens/BookmarkScreen'
@@ -41,9 +49,9 @@ export default function App() {
 		colors: {
 			...NavigationDefaultTheme.colors,
 			...PaperDefaultTheme.colors,
-			background: '#ffffff',
+			background: '#f0f0f0',
 			text: '#333333',
-			background2: '#009387',
+			background2: '#fff',
 			text2: '#009387'
 		}
 	}
@@ -153,22 +161,28 @@ export default function App() {
 	}
 
 	return (
-		<PaperProvider theme={theme}>
+		<PaperProvider style={styles.container} theme={theme}>
 			<AuthContext.Provider value={authContext}>
+				<StatusBar
+					barStyle={theme.dark ? 'light-content' : 'dark-content'}
+					backgroundColor='#fff'
+					translucent
+				/>
 				<NavigationContainer theme={theme}>
 					{loginState.userToken != null ? (
-						<Drawer.Navigator
-							drawerContent={(props) => (
-								<DrawerContent {...props} />
-							)}
-							initialRouteName='Home'
-							screenOptions={{ headerShown: false }}
-						>
-							<Drawer.Screen
-								name='Home'
-								component={MainTabScreen}
-							/>
-						</Drawer.Navigator>
+						// <Drawer.Navigator
+						// 	drawerContent={(props) => (
+						// 		<DrawerContent {...props} />
+						// 	)}
+						// 	initialRouteName='Home'
+						// 	screenOptions={{ headerShown: false }}
+						// >
+						// 	<Drawer.Screen
+						// 		name='Home'
+						// 		component={MainStackScreen}
+						// 	/>
+						// </Drawer.Navigator>
+						<MainStackScreen />
 					) : (
 						<RootStackScreen />
 					)}
@@ -182,6 +196,6 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		alignItems: 'center',
-		justifyContent: 'center'
+		justifyContent: 'center',
 	}
 })

@@ -7,8 +7,10 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import HomeScreen from './HomeScreen'
 import InvoiceScreen from './InvoiceScreen'
 import ClientsScreen from './ClientsScreen'
+import ClientsScreen2 from './ClientsScreen2'
 import NewInvoiceScreen from './NewInvoiceScreen'
 import AddClientScreen from './AddClientScreen'
+import AddClientScreen2 from './AddClientScreen2'
 import AddItemScreen from './AddItemScreen'
 import EditItemScreen from './EditItemScreen'
 import { useTheme } from '@react-navigation/native'
@@ -62,6 +64,7 @@ const ClientsStackScreen = ({ navigation }) => {
 
 	return (
 		<ClientsStack.Navigator
+			initialRouteName='Clients'
 			screenOptions={{
 				headerStyle: {
 					backgroundColor: theme.dark
@@ -85,6 +88,23 @@ const ClientsStackScreen = ({ navigation }) => {
 							backgroundColor='transparent'
 							underlayColor='transparent'
 							onPress={() => navigation.openDrawer()}
+						/>
+					)
+				}}
+			/>
+			<InvoiceStack.Screen
+				name='AddClient'
+				component={AddClientScreen}
+				options={{
+					title: 'Add Client',
+					headerLeft: () => (
+						<Icon.Button
+							name='close'
+							size={25}
+							color='#000'
+							backgroundColor='transparent'
+							underlayColor='transparent'
+							onPress={() => navigation.navigate('Clients')}
 						/>
 					)
 				}}
@@ -144,8 +164,8 @@ const InvoiceStackScreen = ({ navigation }) => {
 				}}
 			/>
 			<InvoiceStack.Screen
-				name='AddClient'
-				component={AddClientScreen}
+				name='Clients2'
+				component={ClientsScreen2}
 				options={{
 					title: 'Clients',
 					headerLeft: () => (
@@ -156,6 +176,23 @@ const InvoiceStackScreen = ({ navigation }) => {
 							backgroundColor='transparent'
 							underlayColor='transparent'
 							onPress={() => navigation.navigate('NewInvoice')}
+						/>
+					)
+				}}
+			/>
+			<InvoiceStack.Screen
+				name='AddClient2'
+				component={AddClientScreen2}
+				options={{
+					title: 'Add Client',
+					headerLeft: () => (
+						<Icon.Button
+							name='close'
+							size={25}
+							color='#000'
+							backgroundColor='transparent'
+							underlayColor='transparent'
+							onPress={() => navigation.navigate('Clients2')}
 						/>
 					)
 				}}
@@ -206,7 +243,11 @@ export default function MainTabScreen() {
 		<Tab.Navigator
 			initialRouteName='HomeStack'
 			activeColor={theme.dark ? colors.text : colors.text2}
-			barStyle={{backgroundColor: theme.dark ? colors.background2 : colors.background }}
+			barStyle={{
+				backgroundColor: theme.dark
+					? colors.background2
+					: colors.background
+			}}
 		>
 			<Tab.Screen
 				name='HomeStack'

@@ -4,8 +4,12 @@ import {
 	Text,
 	TouchableOpacity,
 	StyleSheet,
-	TextInput
+	TextInput,
+	StatusBar,
+	Platform,
+	Alert
 } from 'react-native'
+import { useTheme } from '@react-navigation/native'
 import * as Animatable from 'react-native-animatable'
 import Icon from 'react-native-vector-icons/Ionicons'
 import LinearGradient from 'react-native-linear-gradient'
@@ -27,6 +31,9 @@ const EditItemScreen = ({ navigation }) => {
 		rate: '',
 		quantity: ''
 	})
+
+	const { colors } = useTheme()
+	const theme = useTheme()
 
 	const GetEditItem = async () => {
 		const editItemName = await AsyncStorage.getItem('editItemName')
@@ -125,20 +132,42 @@ const EditItemScreen = ({ navigation }) => {
 	}
 
 	const handleDeleteItem = async () => {
-		let itemList = []
-		const newInvoiceItems = await AsyncStorage.getItem('newInvoiceItems')
-		const editItemName = await AsyncStorage.getItem('editItemName')
-		let index
+		Alert.alert(
+			'Confirm Delete',
+			'Are you sure you want to delete this item?',
+			[
+				{
+					text: 'Cancel'
+				},
+				{
+					text: 'OK',
+					onPress: async () => {
+						let itemList = []
+						const newInvoiceItems = await AsyncStorage.getItem(
+							'newInvoiceItems'
+						)
+						const editItemName = await AsyncStorage.getItem(
+							'editItemName'
+						)
+						let index
 
-		itemList = JSON.parse(newInvoiceItems)
-		itemList.map(
-			(item) =>
-				item.name === editItemName && (index = itemList.indexOf(item))
+						itemList = JSON.parse(newInvoiceItems)
+						itemList.map(
+							(item) =>
+								item.name === editItemName &&
+								(index = itemList.indexOf(item))
+						)
+						itemList.splice(index, 1)
+
+						await AsyncStorage.setItem(
+							'newInvoiceItems',
+							JSON.stringify(itemList)
+						)
+						navigation.navigate('NewInvoice')
+					}
+				}
+			]
 		)
-		itemList.splice(index, 1)
-
-		await AsyncStorage.setItem('newInvoiceItems', JSON.stringify(itemList))
-		navigation.navigate('NewInvoice')
 	}
 
 	useEffect(() => {
@@ -150,8 +179,79 @@ const EditItemScreen = ({ navigation }) => {
 		})
 	}, [])
 
+	const styles = StyleSheet.create({
+		container: {
+			flex: 1,
+			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
+			backgroundColor: colors.background
+		},
+		header: {
+			flexDirection: 'row',
+			alignItems: 'center',
+			backgroundColor: colors.background2,
+			paddingHorizontal: 20,
+			paddingVertical: 10,
+			borderBottomWidth: 1,
+			borderBottomColor: '#c9c9c9',
+			zIndex: 5
+		},
+		headerText: {
+			fontSize: 22,
+			color: colors.text
+		},
+		inputHeader: {
+			color: '#05375a',
+			fontSize: 16,
+			marginLeft: 10,
+			marginTop: 30
+		},
+		inputWrapper: {
+			flexDirection: 'row',
+			borderBottomWidth: 1,
+			borderBottomColor: '#d6d6d6',
+			paddingBottom: 5,
+			marginHorizontal: 10
+		},
+		input: {
+			flex: 1,
+			paddingLeft: 10,
+			color: '#05375a',
+			fontSize: 18
+		},
+		signIn: {
+			marginTop: 30,
+			height: 50,
+			justifyContent: 'center',
+			alignItems: 'center',
+			borderRadius: 10,
+			borderColor: '#075E54',
+			borderWidth: 1,
+			marginHorizontal: 20
+		},
+		errorMsg: {
+			color: '#FF0000',
+			fontSize: 14,
+			marginLeft: 20,
+			marginBottom: 5
+		}
+	})
+
 	return (
 		<View style={styles.container}>
+			<View style={styles.header}>
+				<TouchableOpacity
+					activeOpacity={0.9}
+					onPress={() => navigation.navigate('NewInvoice')}
+				>
+					<Icon
+						style={{ marginRight: 15 }}
+						name='close'
+						color='#075E54'
+						size={25}
+					/>
+				</TouchableOpacity>
+				<Text style={styles.headerText}>Edit Item</Text>
+			</View>
 			{data.name ? (
 				<Animatable.Text
 					animation='fadeIn'
@@ -302,46 +402,3 @@ const EditItemScreen = ({ navigation }) => {
 }
 
 export default EditItemScreen
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: '#f0f0f0'
-	},
-	inputHeader: {
-		color: '#05375a',
-		fontSize: 16,
-		marginLeft: 10,
-		marginTop: 30
-		// marginTop: Platform.OS === 'ios' ? 0 : -12,
-	},
-	inputWrapper: {
-		flexDirection: 'row',
-		borderBottomWidth: 1,
-		borderBottomColor: '#d6d6d6',
-		paddingBottom: 5,
-		marginHorizontal: 10
-	},
-	input: {
-		flex: 1,
-		paddingLeft: 10,
-		color: '#05375a',
-		fontSize: 18
-	},
-	signIn: {
-		marginTop: 30,
-		height: 50,
-		justifyContent: 'center',
-		alignItems: 'center',
-		borderRadius: 10,
-		borderColor: '#075E54',
-		borderWidth: 1,
-		marginHorizontal: 20
-	},
-	errorMsg: {
-		color: '#FF0000',
-		fontSize: 14,
-		marginLeft: 20,
-		marginBottom: 5
-	}
-})
