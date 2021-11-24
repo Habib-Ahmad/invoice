@@ -218,6 +218,8 @@ dependencies {
     }
 
     compile project(':react-native-html-to-pdf')
+
+    implementation project(':react-native-fs')
 }
 
 // Run this once to be able to run the application with BUCK
