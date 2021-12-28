@@ -1,20 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import {
 	View,
 	Text,
-	Button,
 	StyleSheet,
 	Platform,
 	TextInput,
 	TouchableOpacity,
+	Alert,
+	SafeAreaView,
 	StatusBar
 } from 'react-native'
 import * as Animatable from 'react-native-animatable'
-import LinearGradient from 'react-native-linear-gradient'
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import Feather from 'react-native-vector-icons/Feather'
 import { useTheme } from '@react-navigation/native'
+import { AuthContext } from '../components/context'
 
 const SignUpScreen = ({ navigation }) => {
 	const [data, setData] = useState({
@@ -26,22 +26,15 @@ const SignUpScreen = ({ navigation }) => {
 		confirm_secureTextEntry: true
 	})
 
+	const { signUp } = useContext(AuthContext)
 	const { colors } = useTheme()
 
 	const textInputChange = (val) => {
-		if (val.length != 0) {
-			setData({
-				...data,
-				email: val,
-				check_textInputChange: true
-			})
-		} else {
-			setData({
-				...data,
-				email: val,
-				check_textInputChange: false
-			})
-		}
+		setData({
+			...data,
+			email: val,
+			check_textInputChange: true
+		})
 	}
 
 	const handlePasswordChange = (val) => {
@@ -72,9 +65,33 @@ const SignUpScreen = ({ navigation }) => {
 		})
 	}
 
+	const handleSignUp = (username, pwd, pwdConfirm) => {
+		if (
+			data.email.length === 0 ||
+			data.password.length === 0 ||
+			data.confirmPassword.length === 0
+		) {
+			console.log(data)
+			Alert.alert(
+				'Wrong Input!',
+				'The username or password cannot be empty',
+				[{ text: 'Okay' }]
+			)
+			return
+		}
+
+		if (pwd !== pwdConfirm) {
+			Alert.alert('Wrong Input!', 'The passwords do not match', [
+				{ text: 'Okay' }
+			])
+			return
+		}
+
+		signUp(username, pwd)
+	}
+
 	return (
-		<View style={styles.container}>
-			<StatusBar backgroundColor='#075E54' barStyle='light-content' />
+		<SafeAreaView style={styles.container}>
 			<View style={styles.header}>
 				<Text style={styles.textHeader}>Welcome!</Text>
 			</View>
@@ -94,15 +111,6 @@ const SignUpScreen = ({ navigation }) => {
 						autoCapitalize='none'
 						onChangeText={(val) => textInputChange(val)}
 					/>
-					{data.check_textInputChange ? (
-						<Animatable.View animation='bounceIn'>
-							<Feather
-								name='check-circle'
-								color='green'
-								size={20}
-							/>
-						</Animatable.View>
-					) : null}
 				</View>
 
 				<Text
@@ -160,18 +168,24 @@ const SignUpScreen = ({ navigation }) => {
 				</View>
 
 				<View style={styles.button}>
-					<LinearGradient
-						colors={['#08d4c4', '#01ab9d']}
-						style={styles.signIn}
+					<TouchableOpacity
+						style={[styles.signIn, { backgroundColor: '#075E54' }]}
+						onPress={() =>
+							handleSignUp(
+								data.email,
+								data.password,
+								data.confirmPassword
+							)
+						}
 					>
 						<Text style={[styles.textSign, { color: '#fff' }]}>
 							Sign Up
 						</Text>
-					</LinearGradient>
+					</TouchableOpacity>
 
 					<TouchableOpacity
 						onPress={() => navigation.goBack()}
-						style={styles.signIn}
+						style={[styles.signIn, { marginTop: 15 }]}
 					>
 						<Text style={[styles.textSign, { color: '#075E54' }]}>
 							Sign In
@@ -179,7 +193,7 @@ const SignUpScreen = ({ navigation }) => {
 					</TouchableOpacity>
 				</View>
 			</Animatable.View>
-		</View>
+		</SafeAreaView>
 	)
 }
 
@@ -188,6 +202,7 @@ export default SignUpScreen
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 		backgroundColor: '#075E54'
 	},
 	header: {
@@ -229,9 +244,8 @@ const styles = StyleSheet.create({
 	},
 	textInput: {
 		flex: 1,
-		marginTop: Platform.OS === 'ios' ? 0 : -12,
+		marginTop: -5,
 		paddingLeft: 10,
-		color: '#05375a'
 	},
 	errorMsg: {
 		color: '#FF0000',
@@ -248,11 +262,11 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		borderRadius: 10,
 		borderColor: '#075E54',
-		borderWidth: 1,
-		marginTop: 15
+		borderWidth: 1
 	},
 	textSign: {
 		fontSize: 18,
-		fontWeight: 'bold'
+		fontWeight: 'bold',
+		color: '#075E54'
 	}
 })

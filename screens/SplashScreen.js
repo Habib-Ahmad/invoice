@@ -2,11 +2,10 @@ import React from 'react'
 import {
 	View,
 	Text,
-	Button,
 	StyleSheet,
 	Dimensions,
-	Image,
-	TouchableOpacity
+	TouchableOpacity,
+	StatusBar
 } from 'react-native'
 import * as Animatable from 'react-native-animatable'
 import LinearGradient from 'react-native-linear-gradient'
@@ -18,6 +17,7 @@ const SplashScreen = ({ navigation }) => {
 
 	return (
 		<View style={styles.container}>
+			<StatusBar backgroundColor='#075E54' barStyle='light-content' />
 			<View style={styles.header}>
 				<Animatable.Image
 					animation='bounceIn'
@@ -33,10 +33,7 @@ const SplashScreen = ({ navigation }) => {
 				duration={1500}
 			>
 				<Text style={[styles.title, { color: colors.text }]}>
-					Stay Connected with everyone!
-				</Text>
-				<Text style={[styles.text, { color: colors.text }]}>
-					Sign In
+					Create invoices on the go!
 				</Text>
 				<View style={styles.button}>
 					<TouchableOpacity
@@ -87,12 +84,10 @@ const styles = StyleSheet.create({
 		height: logo_height
 	},
 	title: {
-		// color: '#05375a',
 		fontSize: 30,
 		fontWeight: 'bold'
 	},
 	text: {
-		// color: 'grey',
 		marginTop: 5
 	},
 	button: {

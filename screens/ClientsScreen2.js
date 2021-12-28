@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const ClientsScreen2 = ({ navigation }) => {
 	const [clients, setClients] = useState([])
+	const [route, setRoute] = useState('')
 
 	const { colors } = useTheme()
 	const theme = useTheme()
@@ -22,6 +23,8 @@ const ClientsScreen2 = ({ navigation }) => {
 	const GetClientList = async () => {
 		const clientList = await AsyncStorage.getItem('clients')
 		clientList && setClients(JSON.parse(clientList))
+		const routeName = await AsyncStorage.getItem('previousScreen')
+		setRoute(JSON.parse(routeName))
 	}
 
 	useEffect(() => {
@@ -31,13 +34,20 @@ const ClientsScreen2 = ({ navigation }) => {
 		return unsubscribe
 	}, [navigation])
 
-	// useEffect(() => {
-	// 	GetClientList()
-	// }, [])
-
 	const AddClient = async (client) => {
-		await AsyncStorage.setItem('newInvoiceClient', JSON.stringify(client))
-		navigation.navigate('NewInvoice')
+		if (route === 'NewInvoice') {
+			await AsyncStorage.setItem(
+				'newInvoiceClient',
+				JSON.stringify(client)
+			)
+			navigation.navigate('NewInvoice')
+		} else if (route === 'EditInvoice') {
+			await AsyncStorage.setItem(
+				'editInvoiceClient',
+				JSON.stringify(client)
+			)
+			navigation.goBack()
+		}
 	}
 
 	const styles = StyleSheet.create({
@@ -119,7 +129,8 @@ const ClientsScreen2 = ({ navigation }) => {
 			<View style={styles.header}>
 				<TouchableOpacity
 					activeOpacity={0.9}
-					onPress={() => navigation.navigate('NewInvoice')}
+					// onPress={() => navigation.navigate('NewInvoice')}
+					onPress={() => navigation.goBack()}
 				>
 					<IonIcon
 						style={{ marginRight: 15 }}

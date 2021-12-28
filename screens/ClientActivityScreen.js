@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import {
+	View,
+	Text,
+	StyleSheet,
+	TouchableOpacity,
+	ScrollView
+} from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 
-const ClientActivityScreen = () => {
+const ClientActivityScreen = ({ navigation }) => {
 	const [data, setData] = useState({
 		name: '',
 		mobile: '',
 		email: '',
-		invoices: [],
+		invoices: []
 	})
 
 	const GetActivity = async () => {
@@ -26,16 +32,21 @@ const ClientActivityScreen = () => {
 		setData(viewClient)
 	}
 
+	const ViewInvoice = async (id) => {
+		await AsyncStorage.setItem('viewInvoiceId', id)
+		navigation.navigate('ViewInvoice')
+	}
+
 	useEffect(() => {
 		GetActivity()
 	}, [])
 
 	const styles = StyleSheet.create({
 		container: {
-			flex: 1,
+			flex: 1
 		},
 		invoices: {
-			paddingTop: 40,
+			paddingTop: 40
 		},
 		invoice: {
 			flexDirection: 'row',
@@ -45,52 +56,47 @@ const ClientActivityScreen = () => {
 			alignItems: 'center',
 			paddingHorizontal: 20,
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		invoiceTitle: {
 			marginLeft: 20,
-			fontSize: 16,
+			fontSize: 16
 		},
 		invoiceDate: {
 			fontSize: 12,
 			marginLeft: 20,
-			color: '#636363',
-		},
+			color: '#636363'
+		}
 	})
 
 	return (
-		<View>
-			<Text>Activity</Text>
-			{console.log(data.invoices)}
+		<ScrollView>
 			<View style={styles.invoices}>
-				{data.invoices.length > 0 &&
-					data.invoices.map((item, idx) => (
-						<TouchableOpacity
-							key={idx}
-							style={styles.invoice}
-							onPress={() => {
-								console.log(item)
-							}}
-						>
-							<View>
-								<FontAwesome
-									name='file-pdf-o'
-									size={25}
-									color='red'
-								/>
-							</View>
-							<View>
-								<Text style={styles.invoiceTitle}>
-									{item.title}
-								</Text>
-								<Text style={styles.invoiceDate}>
-									{item.date}
-								</Text>
-							</View>
-						</TouchableOpacity>
-					))}
+				{data.invoices.map((item, idx) => (
+					<TouchableOpacity
+						key={idx}
+						style={styles.invoice}
+						onPress={() => {
+							ViewInvoice(item.id)
+						}}
+					>
+						<View>
+							<FontAwesome
+								name='file-pdf-o'
+								size={25}
+								color='red'
+							/>
+						</View>
+						<View>
+							<Text style={styles.invoiceTitle}>
+								{item.title}
+							</Text>
+							<Text style={styles.invoiceDate}>{item.date}</Text>
+						</View>
+					</TouchableOpacity>
+				))}
 			</View>
-		</View>
+		</ScrollView>
 	)
 }
 

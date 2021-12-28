@@ -10,12 +10,11 @@ import {
 } from 'react-native'
 import * as Animatable from 'react-native-animatable'
 import Icon from 'react-native-vector-icons/Ionicons'
-import LinearGradient from 'react-native-linear-gradient'
 import { useTheme } from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const AddItemScreen = ({ navigation }) => {
-	const [items, setItems] = useState([])
+	const [route, setRoute] = useState('')
 
 	const [validation, setValidation] = useState({
 		isValidName: true,
@@ -32,6 +31,34 @@ const AddItemScreen = ({ navigation }) => {
 
 	const { colors } = useTheme()
 	const theme = useTheme()
+
+	useEffect(() => {
+		const unsubscribe = navigation.addListener('focus', () => {
+			getItemDetails()
+		})
+		return unsubscribe
+	}, [navigation])
+
+	useEffect(() => {
+		const getPreviousScreen = async () => {
+			const routeName = await AsyncStorage.getItem('previousScreen')
+			setRoute(JSON.parse(routeName))
+		}
+		getPreviousScreen()
+	}, [])
+
+	const getItemDetails = async () => {
+		const itemDetailsObject = await AsyncStorage.getItem('itemDetails')
+		if (itemDetailsObject) {
+			const itemDetails = JSON.parse(itemDetailsObject)
+			setData({
+				...data,
+				name: itemDetails.name,
+				description: itemDetails.description,
+				rate: itemDetails.rate
+			})
+		}
+	}
 
 	const onChangeText = (val, id) => {
 		setData({
@@ -54,25 +81,48 @@ const AddItemScreen = ({ navigation }) => {
 			})
 
 			let itemList = []
-			const newInvoiceItems = await AsyncStorage.getItem(
-				'newInvoiceItems'
-			)
+			if (route === 'NewInvoice') {
+				const newInvoiceItems = await AsyncStorage.getItem(
+					'newInvoiceItems'
+				)
 
-			if (JSON.parse(newInvoiceItems) == null) {
+				if (JSON.parse(newInvoiceItems) == null) {
+					await AsyncStorage.setItem(
+						'newInvoiceItems',
+						JSON.stringify(itemList)
+					)
+				} else {
+					itemList = JSON.parse(newInvoiceItems)
+				}
+
+				itemList.push(data)
 				await AsyncStorage.setItem(
 					'newInvoiceItems',
 					JSON.stringify(itemList)
 				)
-			} else {
-				itemList = JSON.parse(newInvoiceItems)
-			}
+			} else if (route === 'EditInvoice') {
+				console.log('for edit invoice')
+				const editInvoiceItems = await AsyncStorage.getItem(
+					'editInvoiceItems'
+				)
 
-			itemList.push(data)
-			await AsyncStorage.setItem(
-				'newInvoiceItems',
-				JSON.stringify(itemList)
-			)
-			navigation.navigate('NewInvoice')
+				if (JSON.parse(editInvoiceItems) == null) {
+					await AsyncStorage.setItem(
+						'editInvoiceItems',
+						JSON.stringify(itemList)
+					)
+				} else {
+					itemList = JSON.parse(editInvoiceItems)
+				}
+
+				itemList.push(data)
+				await AsyncStorage.setItem(
+					'editInvoiceItems',
+					JSON.stringify(itemList)
+				)
+			}
+			await AsyncStorage.removeItem('itemDetails')
+			navigation.goBack()
 		} else {
 			let nameStatus = validation.isValidName
 			let rateStatus = validation.isValidRate
@@ -114,14 +164,20 @@ const AddItemScreen = ({ navigation }) => {
 		})
 	}, [])
 
+	const goBack = async () => {
+		await AsyncStorage.removeItem('itemDetails')
+		navigation.goBack()
+	}
+
 	const styles = StyleSheet.create({
 		container: {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
-			backgroundColor: colors.background,
+			backgroundColor: colors.background
 		},
 		header: {
 			flexDirection: 'row',
+			justifyContent: 'space-between',
 			alignItems: 'center',
 			backgroundColor: colors.background2,
 			paddingHorizontal: 20,
@@ -130,16 +186,19 @@ const AddItemScreen = ({ navigation }) => {
 			borderBottomColor: '#c9c9c9',
 			zIndex: 5
 		},
+		headerLeft: {
+			flexDirection: 'row',
+			alignItems: 'center'
+		},
 		headerText: {
 			fontSize: 22,
 			color: colors.text
 		},
 		inputHeader: {
-			color: '#05375a',
+			color: '#000',
 			fontSize: 16,
 			marginLeft: 10,
 			marginTop: 30
-			// marginTop: Platform.OS === 'ios' ? 0 : -12,
 		},
 		inputWrapper: {
 			flexDirection: 'row',
@@ -151,7 +210,7 @@ const AddItemScreen = ({ navigation }) => {
 		input: {
 			flex: 1,
 			paddingLeft: 10,
-			color: '#05375a',
+			color: '#000',
 			fontSize: 18
 		},
 		signIn: {
@@ -169,24 +228,45 @@ const AddItemScreen = ({ navigation }) => {
 			fontSize: 14,
 			marginLeft: 20,
 			marginBottom: 5
+		},
+		select: {
+			height: 80,
+			marginTop: 20,
+			justifyContent: 'center',
+			paddingHorizontal: 20
+		},
+		selectText: {
+			fontSize: 16,
+			color: '#075E54',
+			textDecorationLine: 'underline'
 		}
 	})
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.header}>
+				<View style={styles.headerLeft}>
+					<TouchableOpacity
+						activeOpacity={0.9}
+						onPress={() => goBack()}
+					>
+						<Icon
+							style={{ marginRight: 15 }}
+							name='close'
+							color='#075E54'
+							size={25}
+						/>
+					</TouchableOpacity>
+
+					<Text style={styles.headerText}>Add Item</Text>
+				</View>
+
 				<TouchableOpacity
 					activeOpacity={0.9}
-					onPress={() => navigation.navigate('NewInvoice')}
+					onPress={() => handleAddItem()}
 				>
-					<Icon
-						style={{ marginRight: 15 }}
-						name='close'
-						color='#075E54'
-						size={25}
-					/>
+					<Icon name='checkmark' color='#075E54' size={25} />
 				</TouchableOpacity>
-				<Text style={styles.headerText}>Add Item</Text>
 			</View>
 			{data.name ? (
 				<Animatable.Text
@@ -307,17 +387,10 @@ const AddItemScreen = ({ navigation }) => {
 			</View>
 
 			<TouchableOpacity
-				activeOpacity={0.7}
-				onPress={() => handleAddItem()}
+				style={styles.select}
+				onPress={() => navigation.navigate('Items')}
 			>
-				<LinearGradient
-					colors={['#08d4c4', '#01ab9d']}
-					style={styles.signIn}
-				>
-					<Text style={[styles.textSign, { color: '#fff' }]}>
-						Add Item
-					</Text>
-				</LinearGradient>
+				<Text style={styles.selectText}>Select from list</Text>
 			</TouchableOpacity>
 		</View>
 	)

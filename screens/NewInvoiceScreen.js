@@ -8,7 +8,7 @@ import {
 	Platform,
 	ScrollView,
 	TextInput,
-	Alert,
+	Alert
 } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -16,6 +16,9 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useTheme } from '@react-navigation/native'
 import RNHTMLtoPDF from 'react-native-html-to-pdf'
 import PDFParams from '../components/PDFParams'
+import uuid from 'react-native-uuid'
+import { useRoute } from '@react-navigation/native'
+import database from '@react-native-firebase/database'
 
 const NewInvoiceScreen = ({ navigation }) => {
 	const [subTotal, setSubTotal] = useState(0)
@@ -24,12 +27,16 @@ const NewInvoiceScreen = ({ navigation }) => {
 	const [discountTotal, setDiscountTotal] = useState(0)
 
 	const [invoice, setInvoice] = useState({
-		title: 'Invoice Title',
+		id: '',
+		title: 'Invoice heading',
+		title2: 'Invoice subheading',
 		path: '',
 		client: {},
 		items: [],
-		date: '',
+		date: ''
 	})
+
+	const route = useRoute()
 
 	const [isValidClient, setIsValidClient] = useState(true)
 
@@ -50,10 +57,13 @@ const NewInvoiceScreen = ({ navigation }) => {
 		const invoiceTitle = await AsyncStorage.getItem('newInvoiceTitle')
 		if (invoiceTitle === null) {
 			await AsyncStorage.setItem('newInvoiceTitle', title)
-			title = 'Invoice Title'
+			title = 'Invoice heading'
 		} else {
 			title = invoiceTitle
 		}
+
+		// Name2
+		const title2 = await AsyncStorage.getItem('newInvoiceTitle2')
 
 		// Items
 		let itemList = []
@@ -81,9 +91,9 @@ const NewInvoiceScreen = ({ navigation }) => {
 			)
 		} else {
 			if (addedClientt.invoices) {
+				delete addedClientt.invoices
 				addedClient = addedClientt
 			} else {
-				delete addedClientt.invoices
 				addedClient = addedClientt
 			}
 			setIsValidClient(true)
@@ -95,8 +105,9 @@ const NewInvoiceScreen = ({ navigation }) => {
 		setInvoice({
 			...invoice,
 			title: title,
+			title2: title2,
 			items: itemList,
-			client: addedClient,
+			client: addedClient
 		})
 		setSubTotal(total)
 	}
@@ -104,17 +115,18 @@ const NewInvoiceScreen = ({ navigation }) => {
 	const Close = () => {
 		Alert.alert('Discard changes?', 'All changes will be lost', [
 			{
-				text: 'Cancel',
+				text: 'Cancel'
 			},
 			{
 				text: 'Discard Changes',
 				onPress: async () => {
 					await AsyncStorage.removeItem('newInvoiceTitle')
+					await AsyncStorage.removeItem('newInvoiceTitle2')
 					await AsyncStorage.removeItem('newInvoiceClient')
 					await AsyncStorage.removeItem('newInvoiceItems')
 					navigation.navigate('Invoice')
-				},
-			},
+				}
+			}
 		])
 	}
 
@@ -128,9 +140,14 @@ const NewInvoiceScreen = ({ navigation }) => {
 		navigation.navigate('EditItem')
 	}
 
-	const HandleTitleChange = async (val) => {
-		setInvoice({ ...invoice, title: val })
-		await AsyncStorage.setItem('newInvoiceTitle', val)
+	const HandleTitleChange = async (val, name) => {
+		if (name === 'title') {
+			setInvoice({ ...invoice, title: val })
+			await AsyncStorage.setItem('newInvoiceTitle', val)
+		} else if (name === 'title2') {
+			setInvoice({ ...invoice, title2: val })
+			await AsyncStorage.setItem('newInvoiceTitle2', val)
+		}
 	}
 
 	const onChangeDiscount = (val) => {
@@ -173,6 +190,53 @@ const NewInvoiceScreen = ({ navigation }) => {
 		return capsArray.join(' ')
 	}
 
+	const filterItems = (leftArray, rightArray) => {
+		// A comparer used to determine if two entries are equal.
+		const isSameItem = (a, b) =>
+			a.name === b.name && a.description === b.description
+
+		// Get items that only occur in the left array,
+		// using the compareFunction to determine equality.
+		const onlyInLeft = (left, right, compareFunction) =>
+			left.filter(
+				(leftValue) =>
+					!right.some((rightValue) =>
+						compareFunction(leftValue, rightValue)
+					)
+			)
+
+		const onlyInB = onlyInLeft(leftArray, rightArray, isSameItem)
+
+		const result = onlyInB ? [...onlyInB] : null
+
+		return result
+	}
+
+	const setDatabase = async (items) => {
+		const itemsDB = await database()
+			.ref('/items')
+			.once('value')
+			.then((snapshot) => snapshot.val())
+
+		const itemsDatabase = !itemsDB
+			? []
+			: Array.isArray(itemsDB)
+			? itemsDB
+			: Object.values(itemsDB)
+
+		items.map((item) => {
+			delete item.quantity
+			item.id = uuid.v4().slice(0, 13)
+		})
+
+		const newItemsDatabase = filterItems(items, itemsDatabase)
+
+		newItemsDatabase &&
+			newItemsDatabase.forEach((item) => {
+				database().ref(`/items/${item.id}`).set(item)
+			})
+	}
+
 	const SetInvoiceStorage = async (fp) => {
 		let invoiceList = []
 
@@ -186,12 +250,13 @@ const NewInvoiceScreen = ({ navigation }) => {
 
 		let invoiceCopy = { ...invoice }
 		invoiceCopy.path = fp
+		invoiceCopy.id = uuid.v4()
 
 		const date = new Date()
 		const [month, day, year] = [
 			date.getMonth(),
 			date.getDate(),
-			date.getFullYear(),
+			date.getFullYear()
 		]
 
 		invoiceCopy.date = `${year}-${month}-${day}`
@@ -211,32 +276,34 @@ const NewInvoiceScreen = ({ navigation }) => {
 				index = clientList.indexOf(item)
 				if (item.invoices) {
 					item.invoices.push(invoiceCopy)
-					// delete item.invoices
 				} else {
 					item.invoices = [invoiceCopy]
-					// delete item.invoices
 				}
 				client = item
 			}
 		})
-
 		clientList.splice(index, 1, client)
-		console.log('clientList: ', clientList[0].invoices)
 		await AsyncStorage.setItem('clients', JSON.stringify(clientList))
+
+		// Add items to database
+		setDatabase(invoiceCopy.items)
 
 		Alert.alert(
 			'PDF created!',
 			'It has been saved in your document folder',
 			[
 				{
-					text: 'Ok',
-				},
+					text: 'Ok'
+				}
 			]
 		)
 
 		await AsyncStorage.removeItem('newInvoiceTitle')
+		await AsyncStorage.removeItem('newInvoiceTitle2')
 		await AsyncStorage.removeItem('newInvoiceClient')
 		await AsyncStorage.removeItem('newInvoiceItems')
+		await AsyncStorage.removeItem('previousScreen')
+		await AsyncStorage.removeItem('editItemName')
 		navigation.navigate('Invoice')
 	}
 
@@ -252,18 +319,22 @@ const NewInvoiceScreen = ({ navigation }) => {
 				})
 			}
 
-			let name = capSentence(invoice.title)
+			const name = capSentence(invoice.title)
+
+			const pdfItems = [...invoice.items]
 
 			const params = PDFParams(
-				invoice.items,
+				pdfItems,
 				sum,
-				name.replace(/\s+/g, '')
+				name.replace(/\s+/g, ''),
+				invoice.title,
+				invoice.title2
 			)
 
 			let options = {
 				html: params[0],
 				fileName: params[1],
-				directory: params[2],
+				directory: params[2]
 			}
 
 			await RNHTMLtoPDF.convert(options).then((value) => {
@@ -280,10 +351,7 @@ const NewInvoiceScreen = ({ navigation }) => {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 			backgroundColor: colors.background,
-			position: 'relative',
-		},
-		scrollView: {
-			// flex: 1
+			position: 'relative'
 		},
 		header: {
 			flexDirection: 'row',
@@ -293,17 +361,15 @@ const NewInvoiceScreen = ({ navigation }) => {
 			paddingVertical: 10,
 			borderBottomWidth: 1,
 			borderBottomColor: '#c9c9c9',
-			zIndex: 5,
+			zIndex: 5
 		},
 		headerText: {
 			fontSize: 22,
-			color: colors.text,
+			color: colors.text
 		},
 		titleInput: {
 			fontSize: 16,
-			width: '100%',
-			// borderBottomWidth: 0.3,
-			// padding: 5
+			width: '100%'
 		},
 		clientWrapper: {
 			flexDirection: 'row',
@@ -314,10 +380,10 @@ const NewInvoiceScreen = ({ navigation }) => {
 			justifyContent: 'space-between',
 			paddingHorizontal: 20,
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		client: {
-			flexDirection: 'row',
+			flexDirection: 'row'
 		},
 		logoWrapper: {
 			backgroundColor: 'pink',
@@ -326,22 +392,22 @@ const NewInvoiceScreen = ({ navigation }) => {
 			borderRadius: 40,
 			justifyContent: 'center',
 			alignItems: 'center',
-			marginRight: 20,
+			marginRight: 20
 		},
 		logo: {
-			fontSize: 20,
+			fontSize: 20
 		},
 		detailsWrapper: {},
 		name: {
-			fontSize: 16,
+			fontSize: 16
 		},
 		email: {
 			color: '#5c5c5c',
-			fontSize: 12,
+			fontSize: 12
 		},
 		actionHeader: {
 			paddingLeft: 20,
-			marginBottom: 10,
+			marginBottom: 10
 		},
 		action: {
 			backgroundColor: '#fff',
@@ -350,14 +416,14 @@ const NewInvoiceScreen = ({ navigation }) => {
 			alignItems: 'center',
 			flexDirection: 'row',
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		actionIcon: {
 			color: '#075E54',
-			marginRight: 20,
+			marginRight: 20
 		},
 		actionText: {
-			color: '#075E54',
+			color: '#075E54'
 		},
 		listItem: {
 			backgroundColor: '#fff',
@@ -366,31 +432,31 @@ const NewInvoiceScreen = ({ navigation }) => {
 			paddingVertical: 10,
 			justifyContent: 'center',
 			borderBottomWidth: 0.5,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		listItemName: {
-			color: '#000',
+			color: '#000'
 		},
 		listItemDesc: {
 			color: '#6e6e6e',
-			marginBottom: 8,
+			marginBottom: 8
 		},
 		listItemNumbersWrapper: {
 			flexDirection: 'row',
-			justifyContent: 'space-between',
+			justifyContent: 'space-between'
 		},
 		listItemNumbers: {
-			color: '#6e6e6e',
+			color: '#6e6e6e'
 		},
 		inputWrapper: {
-			width: '30%',
+			width: '30%'
 		},
 		input: {
 			color: '#05375a',
 			fontSize: 15,
 			borderWidth: 0.2,
 			alignItems: 'center',
-			padding: 3,
+			padding: 3
 		},
 		subTotalWrapper: {
 			flexDirection: 'row',
@@ -401,10 +467,10 @@ const NewInvoiceScreen = ({ navigation }) => {
 			height: 60,
 			paddingHorizontal: 20,
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		subTotalText1: {
-			color: '#6e6e6e',
+			color: '#6e6e6e'
 		},
 		discountWrapper: {
 			flexDirection: 'row',
@@ -414,7 +480,7 @@ const NewInvoiceScreen = ({ navigation }) => {
 			height: 80,
 			paddingHorizontal: 20,
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		nextButtonWrapper: {
 			position: 'absolute',
@@ -422,7 +488,7 @@ const NewInvoiceScreen = ({ navigation }) => {
 			width: '100%',
 			height: 50,
 			backgroundColor: 'transparent',
-			justifyContent: 'center',
+			justifyContent: 'center'
 		},
 		nextButton: {
 			height: 50,
@@ -431,15 +497,15 @@ const NewInvoiceScreen = ({ navigation }) => {
 			borderRadius: 10,
 			borderColor: '#009387',
 			borderWidth: 1,
-			marginHorizontal: 20,
+			marginHorizontal: 20
 		},
 		errorMsg: {
 			color: '#FF0000',
 			fontSize: 14,
 			marginLeft: 20,
 			marginBottom: 5,
-			marginTop: -30,
-		},
+			marginTop: -30
+		}
 	})
 
 	return (
@@ -458,14 +524,26 @@ const NewInvoiceScreen = ({ navigation }) => {
 
 			<ScrollView>
 				<Text style={[styles.actionHeader, { marginTop: 30 }]}>
-					Invoice title
+					Invoice heading
 				</Text>
 				<View style={styles.action}>
 					<TextInput
 						style={styles.titleInput}
-						onChangeText={(val) => HandleTitleChange(val)}
+						onChangeText={(val) => HandleTitleChange(val, 'title')}
 						onEndEditing={(e) => OnEndEditing(e.nativeEvent.text)}
 						value={invoice.title}
+					/>
+				</View>
+
+				<Text style={[styles.actionHeader, { marginTop: 30 }]}>
+					Invoice subheading
+				</Text>
+				<View style={styles.action}>
+					<TextInput
+						style={styles.titleInput}
+						onChangeText={(val) => HandleTitleChange(val, 'title2')}
+						onEndEditing={(e) => OnEndEditing(e.nativeEvent.text)}
+						value={invoice.title2}
 					/>
 				</View>
 
@@ -501,7 +579,13 @@ const NewInvoiceScreen = ({ navigation }) => {
 				{Object.keys(invoice.client).length < 1 && (
 					<TouchableOpacity
 						style={[styles.action, { marginBottom: 30 }]}
-						onPress={() => navigation.navigate('Clients2')}
+						onPress={async () => {
+							await AsyncStorage.setItem(
+								'previousScreen',
+								JSON.stringify(route.name)
+							)
+							navigation.navigate('Clients2')
+						}}
 					>
 						<Icon
 							style={styles.actionIcon}
@@ -562,7 +646,13 @@ const NewInvoiceScreen = ({ navigation }) => {
 
 				<TouchableOpacity
 					style={styles.action}
-					onPress={() => navigation.navigate('AddItem')}
+					onPress={async () => {
+						await AsyncStorage.setItem(
+							'previousScreen',
+							JSON.stringify(route.name)
+						)
+						navigation.navigate('AddItem')
+					}}
 				>
 					<Icon style={styles.actionIcon} name='add' size={25} />
 					<Text style={styles.actionText}>Add Item</Text>
@@ -584,7 +674,7 @@ const NewInvoiceScreen = ({ navigation }) => {
 							<View
 								style={{
 									flexDirection: 'row',
-									alignItems: 'center',
+									alignItems: 'center'
 								}}
 							>
 								<TextInput
@@ -624,7 +714,7 @@ const NewInvoiceScreen = ({ navigation }) => {
 				<View
 					style={[
 						styles.subTotalWrapper,
-						{ marginTop: 0, marginBottom: 100 },
+						{ marginTop: 0, marginBottom: 100 }
 					]}
 				>
 					<Text style={styles.subTotalText1}>Total</Text>

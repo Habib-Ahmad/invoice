@@ -21,7 +21,6 @@ const ClientsScreen = ({ navigation }) => {
 	const GetClientList = async () => {
 		const clientList = await AsyncStorage.getItem('clients')
 		clientList && setClients(JSON.parse(clientList))
-		console.log('get client list')
 	}
 
 	useEffect(() => {

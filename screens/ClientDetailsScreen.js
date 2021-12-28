@@ -7,7 +7,7 @@ const ClientDetailsScreen = () => {
 	const [data, setData] = useState({
 		name: '',
 		mobile: '',
-		email: ''
+		email: '',
 	})
 
 	const { colors } = useTheme()
@@ -30,12 +30,12 @@ const ClientDetailsScreen = () => {
 
 	useEffect(() => {
 		GetClient()
-	})
+	}, [])
 
 	const styles = StyleSheet.create({
 		container: {
 			flex: 1,
-			backgroundColor: colors.background
+			backgroundColor: colors.background,
 		},
 		itemWrapper: {
 			backgroundColor: colors.background2,
@@ -44,12 +44,12 @@ const ClientDetailsScreen = () => {
 			paddingVertical: 10,
 			borderBottomWidth: 1,
 			borderBottomColor: '#d6d6d6',
-			justifyContent: 'center'
+			justifyContent: 'center',
 		},
 		itemText1: {
-			color: '#636363'
+			color: '#636363',
 		},
-		itemText2: {}
+		itemText2: {},
 	})
 
 	return (

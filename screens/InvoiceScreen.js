@@ -6,7 +6,7 @@ import {
 	Text,
 	StatusBar,
 	Platform,
-	ScrollView,
+	ScrollView
 } from 'react-native'
 import { useTheme } from '@react-navigation/native'
 import AntDesign from 'react-native-vector-icons/AntDesign'
@@ -16,18 +16,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 const InvoiceScreen = ({ navigation }) => {
 	const [invoice, setInvoice] = useState([
 		{
+			id: '',
 			title: '',
 			path: '',
 			client: {},
 			items: [],
-			date: '',
-		},
+			date: ''
+		}
 	])
 
 	const GetInvoices = async () => {
 		const invoiceListObject = await AsyncStorage.getItem('invoices')
 		const invoiceList = JSON.parse(invoiceListObject)
-		invoiceList && setInvoice(invoiceList)
+		invoiceList && invoiceList.length > 0
+			? setInvoice(invoiceList)
+			: setInvoice(invoice)
+	}
+
+	const ViewInvoice = async (id) => {
+		await AsyncStorage.setItem('viewInvoiceId', id)
+		navigation.navigate('ViewInvoice')
 	}
 
 	useEffect(() => {
@@ -38,8 +46,9 @@ const InvoiceScreen = ({ navigation }) => {
 	}, [navigation])
 
 	const Clear = async () => {
-		await AsyncStorage.removeItem('invoices')
-		await AsyncStorage.removeItem('clients')
+		// await AsyncStorage.removeItem('invoices')
+		// await AsyncStorage.removeItem('clients')
+		await AsyncStorage.removeItem('ItemDatabase')
 	}
 
 	const { colors } = useTheme()
@@ -49,7 +58,7 @@ const InvoiceScreen = ({ navigation }) => {
 		container: {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
-			backgroundColor: colors.background,
+			backgroundColor: colors.background
 		},
 		header: {
 			flexDirection: 'row',
@@ -59,14 +68,14 @@ const InvoiceScreen = ({ navigation }) => {
 			paddingVertical: 10,
 			borderBottomWidth: 1,
 			borderBottomColor: '#c9c9c9',
-			zIndex: 5,
+			zIndex: 5
 		},
 		headerText: {
 			fontSize: 22,
-			color: colors.text,
+			color: colors.text
 		},
 		invoices: {
-			paddingTop: 40,
+			paddingTop: 40
 		},
 		invoice: {
 			flexDirection: 'row',
@@ -76,16 +85,16 @@ const InvoiceScreen = ({ navigation }) => {
 			alignItems: 'center',
 			paddingHorizontal: 20,
 			borderBottomWidth: 1,
-			borderBottomColor: '#c9c9c9',
+			borderBottomColor: '#c9c9c9'
 		},
 		invoiceTitle: {
 			marginLeft: 20,
-			fontSize: 16,
+			fontSize: 16
 		},
 		invoiceDate: {
 			fontSize: 12,
 			marginLeft: 20,
-			color: '#636363',
+			color: '#636363'
 		},
 		newInvoiceBtn: {
 			width: 60,
@@ -96,11 +105,11 @@ const InvoiceScreen = ({ navigation }) => {
 			right: 50,
 			backgroundColor: '#009387',
 			alignItems: 'center',
-			justifyContent: 'center',
+			justifyContent: 'center'
 		},
 		newInvoiceBtnIcon: {
-			color: '#fff',
-		},
+			color: '#fff'
+		}
 	})
 
 	return (
@@ -110,33 +119,34 @@ const InvoiceScreen = ({ navigation }) => {
 			</View>
 			<ScrollView style={styles.scrollView}>
 				<View style={styles.invoices}>
-					{invoice[0].title != '' &&
-						invoice.reverse().map((item, idx) => (
-							<TouchableOpacity
-								activeOpacity={0.8}
-								key={idx}
-								style={styles.invoice}
-								onPress={() => {
-									console.log(item)
-								}}
-							>
-								<View>
-									<FontAwesome
-										name='file-pdf-o'
-										size={25}
-										color='red'
-									/>
-								</View>
-								<View>
-									<Text style={styles.invoiceTitle}>
-										{item.title}
-									</Text>
-									<Text style={styles.invoiceDate}>
-										{item.date}
-									</Text>
-								</View>
-							</TouchableOpacity>
-						))}
+					{invoice[0].id
+						? invoice.reverse().map((item, idx) => (
+								<TouchableOpacity
+									activeOpacity={0.8}
+									key={idx}
+									style={styles.invoice}
+									onPress={() => {
+										ViewInvoice(item.id)
+									}}
+								>
+									<View>
+										<FontAwesome
+											name='file-pdf-o'
+											size={25}
+											color='red'
+										/>
+									</View>
+									<View>
+										<Text style={styles.invoiceTitle}>
+											{item.title}
+										</Text>
+										<Text style={styles.invoiceDate}>
+											{item.date}
+										</Text>
+									</View>
+								</TouchableOpacity>
+						  ))
+						: null}
 				</View>
 			</ScrollView>
 			<TouchableOpacity

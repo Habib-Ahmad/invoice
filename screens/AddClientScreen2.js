@@ -132,7 +132,6 @@ const AddClientScreen2 = ({ navigation }) => {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 			backgroundColor: colors.background,
-			position: 'relative',
 		},
 		scrollView: {
 			// flex: 1
@@ -194,7 +193,7 @@ const AddClientScreen2 = ({ navigation }) => {
 			<View style={styles.header}>
 				<TouchableOpacity
 					activeOpacity={0.9}
-					onPress={() => navigation.navigate('Clients2')}
+					onPress={() => navigation.goBack()}
 				>
 					<Icon
 						style={{ marginRight: 15 }}

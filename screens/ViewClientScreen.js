@@ -14,12 +14,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs'
 import ClientActivityScreen from './ClientActivityScreen'
 import ClientDetailsScreen from './ClientDetailsScreen'
+import RNFS from 'react-native-fs'
+
 const Tab = createMaterialTopTabNavigator()
 
 const ClientTabs = () => {
 	return (
 		<Tab.Navigator>
-			<Tab.Screen name='Activity' component={ClientActivityScreen} />
+			<Tab.Screen name='Invoices' component={ClientActivityScreen} />
 			<Tab.Screen name='Details' component={ClientDetailsScreen} />
 		</Tab.Navigator>
 	)
@@ -71,11 +73,52 @@ const ViewClientScreen = ({ navigation }) => {
 				{
 					text: 'OK',
 					onPress: async () => {
+						// delete client invoices
+						let idArray = []
+						const invoiceListObject = await AsyncStorage.getItem(
+							'invoices'
+						)
+						if (invoiceListObject !== null) {
+							const invoiceList = JSON.parse(invoiceListObject)
+							data.invoices.map((invoice) => {
+								idArray.push(invoice.id)
+							})
+							const newInvoiceList = invoiceList.filter(
+								(invoice) => !idArray.includes(invoice.id)
+							)
+
+							await AsyncStorage.setItem(
+								'invoices',
+								JSON.stringify(newInvoiceList)
+							)
+
+							// delete client invoices from phone
+							const anotherInvoiceList = invoiceList.filter(
+								(invoice) => idArray.includes(invoice.id)
+							)
+							anotherInvoiceList.map((invoice) => {
+								RNFS.unlink(invoice.path)
+									.then(() => {
+										console.log(
+											'FILE DELETED',
+											invoice.path
+										)
+									})
+									// `unlink` will throw an error, if the item to unlink does not exist
+									.catch((err) => {
+										console.log(err.message)
+									})
+							})
+						}
+
+						// delete client
 						let clientList = []
 						let index
 
-						const clients = await AsyncStorage.getItem('clients')
-						clientList = JSON.parse(clients)
+						const clientListObject = await AsyncStorage.getItem(
+							'clients'
+						)
+						clientList = JSON.parse(clientListObject)
 						clientList.map(
 							(item) =>
 								item.name === name &&

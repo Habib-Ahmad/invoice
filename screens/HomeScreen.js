@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {
 	SafeAreaView,
 	StyleSheet,
@@ -6,36 +6,18 @@ import {
 	View,
 	StatusBar,
 	Platform,
-	TouchableHighlight,
 	TouchableOpacity,
 	Dimensions
 } from 'react-native'
 import { useTheme } from '@react-navigation/native'
-import RNHTMLtoPDF from 'react-native-html-to-pdf'
-import PDFParams from '../components/PDFParams'
-import logo from '../assets/switchBox_watermark.jpeg'
-import Icon from 'react-native-vector-icons/Ionicons'
-import Pdf from 'react-native-pdf'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import Icon from 'react-native-vector-icons/AntDesign'
+import { AuthContext } from '../components/context'
 
 const HomeScreen = ({ navigation }) => {
-	const source = { uri: 'file:///storage/emulated/0/Documents/invoice.pdf' }
-
 	const { colors } = useTheme()
 	const theme = useTheme()
 
-	const CreatePDF = async () => {
-		const params = PDFParams(logo)
-
-		let options = {
-			html: params[0],
-			fileName: params[1],
-			directory: params[2]
-		}
-
-		let file = await RNHTMLtoPDF.convert(options)
-		alert(file.filePath)
-	}
+	const { signOut } = useContext(AuthContext)
 
 	const styles = StyleSheet.create({
 		container: {
@@ -80,42 +62,11 @@ const HomeScreen = ({ navigation }) => {
 			<View style={styles.header}>
 				<Text style={styles.headerText}>Home</Text>
 				<View style={styles.icons}>
-					<TouchableOpacity>
-						<Icon
-							style={{ marginRight: 30 }}
-							name='ios-notifications'
-							color='#009387'
-							size={22}
-						/>
-					</TouchableOpacity>
-					<TouchableOpacity>
-						<Icon name='person-circle' color='#009387' size={25} />
+					<TouchableOpacity onPress={() => signOut()}>
+						<Icon name='logout' color='#009387' size={25} />
 					</TouchableOpacity>
 				</View>
 			</View>
-
-			{/* <View style={styles.container2}>
-				<Pdf
-					source={source}
-					onLoadComplete={(numberOfPages, filePath) => {
-						console.log(`Number of pages: ${numberOfPages}`)
-					}}
-					onPageChanged={(page, numberOfPages) => {
-						console.log(`Current page: ${page}`)
-					}}
-					onError={(error) => {
-						console.log(error)
-					}}
-					onPressLink={(uri) => {
-						console.log(`Link pressed: ${uri}`)
-					}}
-					style={styles.pdf}
-				/>
-			</View> */}
-
-			{/* <TouchableHighlight onPress={CreatePDF}>
-				<Text>Create PDF</Text>
-			</TouchableHighlight> */}
 		</SafeAreaView>
 	)
 }

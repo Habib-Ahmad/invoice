@@ -2,67 +2,43 @@ import React, { useState, useContext } from 'react'
 import {
 	View,
 	Text,
-	Button,
 	StyleSheet,
-	Platform,
 	TextInput,
 	TouchableOpacity,
-	StatusBar,
-	Alert
+	Alert,
+	Platform,
+	StatusBar
 } from 'react-native'
 import * as Animatable from 'react-native-animatable'
-import LinearGradient from 'react-native-linear-gradient'
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import Feather from 'react-native-vector-icons/Feather'
 import { AuthContext } from '../components/context'
 import { useTheme } from '@react-navigation/native'
-import Users from '../model/users'
 
 const SignInScreen = ({ navigation }) => {
 	const [data, setData] = useState({
 		userName: '',
 		password: '',
 		check_textInputChange: false,
-		secureTextEntry: true,
-		isValidUser: true,
-		isValidPassword: true
+		secureTextEntry: true
 	})
 
 	const { signIn } = useContext(AuthContext)
 	const { colors } = useTheme()
 
 	const textInputChange = (val) => {
-		if (val.trim().length >= 4) {
-			setData({
-				...data,
-				userName: val,
-				check_textInputChange: true,
-				isValidUser: true
-			})
-		} else {
-			setData({
-				...data,
-				userName: val,
-				check_textInputChange: false,
-				isValidUser: false
-			})
-		}
+		setData({
+			...data,
+			userName: val,
+			check_textInputChange: true
+		})
 	}
 
 	const handlePasswordChange = (val) => {
-		if (val.trim().length >= 8) {
-			setData({
-				...data,
-				password: val,
-				isValidPassword: true
-			})
-		} else {
-			setData({
-				...data,
-				isValidPassword: false
-			})
-		}
+		setData({
+			...data,
+			password: val
+		})
 	}
 
 	const updateSecureTextEntry = () => {
@@ -72,29 +48,8 @@ const SignInScreen = ({ navigation }) => {
 		})
 	}
 
-	const handleValidUser = (val) => {
-		if (val.trim().length >= 4) {
-			console.log('true')
-			setData({
-				...data,
-				isValidUser: true
-			})
-		} else {
-			setData({
-				...data,
-				isValidUser: false
-			})
-		}
-	}
-
 	const handleLogin = (username, pwd) => {
-		const foundUser = Users.filter((item) => {
-			return username == item.userName && pwd == item.password
-		})
-
-		console.log(foundUser)
-
-		if (data.userName.length == 0 || data.password.length == 0) {
+		if (data.userName.length === 0 || data.password.length === 0) {
 			Alert.alert(
 				'Wrong Input!',
 				'The username or password cannot be empty',
@@ -103,21 +58,11 @@ const SignInScreen = ({ navigation }) => {
 			return
 		}
 
-		if (foundUser.length == 0) {
-			Alert.alert(
-				'Invalid user!',
-				'The username or password is incorrect',
-				[{ text: 'Okay' }]
-			)
-			return
-		}
-
-		signIn(foundUser)
+		signIn(username, pwd)
 	}
 
 	return (
 		<View style={styles.container}>
-			<StatusBar backgroundColor='#075E54' barStyle='light-content' />
 			<View style={styles.header}>
 				<Text style={styles.textHeader}>Welcome!</Text>
 			</View>
@@ -126,38 +71,18 @@ const SignInScreen = ({ navigation }) => {
 				style={[styles.footer, { backgroundColor: colors.background }]}
 			>
 				<Text style={[styles.textFooter, { color: colors.text }]}>
-					Username
+					E-mail
 				</Text>
 				<View style={styles.action}>
 					<FontAwesome name='user-o' color={colors.text} size={20} />
 					<TextInput
-						placeholder='Your Username'
+						placeholder='Your E-mail'
 						placeholderTextColor='#666666'
 						style={[styles.textInput, { color: colors.text }]}
 						autoCapitalize='none'
 						onChangeText={(val) => textInputChange(val)}
-						onEndEditing={(e) =>
-							handleValidUser(e.nativeEvent.text)
-						}
 					/>
-					{/* {data.check_textInputChange ? ( */}
-					{data.isValidUser && (
-						<Animatable.View animation='bounceIn'>
-							<Feather
-								name='check-circle'
-								color='green'
-								size={20}
-							/>
-						</Animatable.View>
-					)}
 				</View>
-				{data.isValidUser || (
-					<Animatable.View animation='bounceInLeft' duration={500}>
-						<Text style={styles.errorMsg}>
-							Username must be at least 4 characters long
-						</Text>
-					</Animatable.View>
-				)}
 
 				<Text
 					style={[
@@ -185,15 +110,10 @@ const SignInScreen = ({ navigation }) => {
 						)}
 					</TouchableOpacity>
 				</View>
-				{data.isValidPassword || (
-					<Animatable.View animation='bounceInLeft' duration={500}>
-						<Text style={styles.errorMsg}>
-							Password must be at least 6 characters long
-						</Text>
-					</Animatable.View>
-				)}
 
-				<TouchableOpacity>
+				<TouchableOpacity
+					onPress={() => navigation.navigate('ForgotPassword')}
+				>
 					<Text style={{ color: '#075E54', marginTop: 15 }}>
 						Forgot password?
 					</Text>
@@ -201,28 +121,21 @@ const SignInScreen = ({ navigation }) => {
 
 				<View style={styles.button}>
 					<TouchableOpacity
-						style={styles.signIn}
+						style={[styles.signIn, { backgroundColor: '#075E54' }]}
 						onPress={() =>
 							handleLogin(data.userName, data.password)
 						}
 					>
-						<LinearGradient
-							colors={['#08d4c4', '#01ab9d']}
-							style={styles.signIn}
-						>
-							<Text style={[styles.textSign, { color: '#fff' }]}>
-								Sign In
-							</Text>
-						</LinearGradient>
+						<Text style={[styles.textSign, { color: '#fff' }]}>
+							Sign In
+						</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
 						onPress={() => navigation.navigate('SignUpScreen')}
 						style={[styles.signIn, { marginTop: 15 }]}
 					>
-						<Text style={[styles.textSign, { color: '#075E54' }]}>
-							Sign Up
-						</Text>
+						<Text style={styles.textSign}>Sign Up</Text>
 					</TouchableOpacity>
 				</View>
 			</Animatable.View>
@@ -235,6 +148,7 @@ export default SignInScreen
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 		backgroundColor: '#075E54'
 	},
 	header: {
@@ -275,9 +189,8 @@ const styles = StyleSheet.create({
 	},
 	textInput: {
 		flex: 1,
-		marginTop: Platform.OS === 'ios' ? 0 : -12,
+		marginTop: -5,
 		paddingLeft: 10,
-		color: '#05375a'
 	},
 	errorMsg: {
 		color: '#FF0000',
@@ -298,6 +211,7 @@ const styles = StyleSheet.create({
 	},
 	textSign: {
 		fontSize: 18,
-		fontWeight: 'bold'
+		fontWeight: 'bold',
+		color: '#075E54'
 	}
 })

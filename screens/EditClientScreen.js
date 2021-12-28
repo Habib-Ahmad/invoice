@@ -6,7 +6,7 @@ import {
 	StyleSheet,
 	TextInput,
 	StatusBar,
-	Platform
+	Platform,
 } from 'react-native'
 import * as Animatable from 'react-native-animatable'
 import IonIcon from 'react-native-vector-icons/Ionicons'
@@ -20,13 +20,14 @@ const EditClientScreen = ({ navigation }) => {
 		isValidName: true,
 		isExistingName: false,
 		isValidMobile: true,
-		isValidEmail: true
+		isValidEmail: true,
 	})
 
 	const [data, setData] = useState({
 		name: '',
 		mobile: '',
-		email: ''
+		email: '',
+		invoices: [],
 	})
 
 	const { colors } = useTheme()
@@ -48,7 +49,8 @@ const EditClientScreen = ({ navigation }) => {
 			...data,
 			name: editClient.name,
 			mobile: editClient.mobile,
-			email: editClient.email
+			email: editClient.email,
+			invoices: editClient.invoices,
 		})
 	}
 
@@ -60,12 +62,12 @@ const EditClientScreen = ({ navigation }) => {
 		if (id === 'email') {
 			setData({
 				...data,
-				[id]: val.toLowerCase()
+				[id]: val.toLowerCase(),
 			})
 		} else {
 			setData({
 				...data,
-				[id]: val
+				[id]: val,
 			})
 		}
 	}
@@ -99,7 +101,7 @@ const EditClientScreen = ({ navigation }) => {
 				isValidName: true,
 				isExistingName: false,
 				isValidMobile: true,
-				isValidEmail: true
+				isValidEmail: true,
 			})
 
 			let clientList = []
@@ -117,7 +119,7 @@ const EditClientScreen = ({ navigation }) => {
 			clientList.splice(index, 1, data)
 
 			await AsyncStorage.setItem('clients', JSON.stringify(clientList))
-			navigation.navigate('Clients')
+			navigation.navigate('ViewClient')
 		} else {
 			let nameStatus = validation.isValidName
 			let existingNameStatus = validation.isExistingName
@@ -141,7 +143,7 @@ const EditClientScreen = ({ navigation }) => {
 				isValidName: nameStatus,
 				isExistingName: existingNameStatus,
 				isValidMobile: mobileStatus,
-				isValidEmail: emailStatus
+				isValidEmail: emailStatus,
 			})
 		}
 	}
@@ -150,7 +152,7 @@ const EditClientScreen = ({ navigation }) => {
 		if (val.trim().length > 0) {
 			setValidation({
 				...validation,
-				[id]: true
+				[id]: true,
 			})
 		}
 	}
@@ -160,7 +162,7 @@ const EditClientScreen = ({ navigation }) => {
 			...validation,
 			isValidName: true,
 			isValidMobile: true,
-			isValidEmail: true
+			isValidEmail: true,
 		})
 	}, [])
 
@@ -169,7 +171,7 @@ const EditClientScreen = ({ navigation }) => {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 			backgroundColor: colors.background,
-			position: 'relative'
+			position: 'relative',
 		},
 		scrollView: {
 			// flex: 1
@@ -182,17 +184,17 @@ const EditClientScreen = ({ navigation }) => {
 			paddingVertical: 10,
 			borderBottomWidth: 1,
 			borderBottomColor: '#c9c9c9',
-			zIndex: 5
+			zIndex: 5,
 		},
 		headerText: {
 			fontSize: 22,
-			color: colors.text
+			color: colors.text,
 		},
 		inputHeader: {
 			color: '#05375a',
 			fontSize: 16,
 			marginLeft: 10,
-			marginTop: 30
+			marginTop: 30,
 			// marginTop: Platform.OS === 'ios' ? 0 : -12,
 		},
 		inputWrapper: {
@@ -200,13 +202,13 @@ const EditClientScreen = ({ navigation }) => {
 			borderBottomWidth: 1,
 			borderBottomColor: '#d6d6d6',
 			paddingBottom: 5,
-			marginHorizontal: 10
+			marginHorizontal: 10,
 		},
 		input: {
 			flex: 1,
 			paddingLeft: 10,
 			color: '#05375a',
-			fontSize: 18
+			fontSize: 18,
 		},
 		signIn: {
 			marginTop: 30,
@@ -216,14 +218,14 @@ const EditClientScreen = ({ navigation }) => {
 			borderRadius: 10,
 			borderColor: '#075E54',
 			borderWidth: 1,
-			marginHorizontal: 20
+			marginHorizontal: 20,
 		},
 		errorMsg: {
 			color: '#FF0000',
 			fontSize: 14,
 			marginLeft: 20,
-			marginBottom: 5
-		}
+			marginBottom: 5,
+		},
 	})
 
 	return (

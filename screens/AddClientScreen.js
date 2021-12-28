@@ -133,7 +133,6 @@ const AddClientScreen = ({ navigation }) => {
 			flex: 1,
 			paddingTop: Platform.OS == 'android' ? StatusBar.currentHeight : 0,
 			backgroundColor: colors.background,
-			position: 'relative',
 		},
 		scrollView: {
 			// flex: 1

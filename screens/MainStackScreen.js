@@ -8,11 +8,15 @@ import HomeScreen from './HomeScreen'
 import InvoiceScreen from './InvoiceScreen'
 import ClientsScreen from './ClientsScreen'
 import ClientsScreen2 from './ClientsScreen2'
+import ClientsScreen3 from './ClientsScreen3'
 import NewInvoiceScreen from './NewInvoiceScreen'
+import ViewInvoiceScreen from './ViewInvoiceScreen'
+import EditInvoiceScreen from './EditInvoiceScreen'
 import AddClientScreen from './AddClientScreen'
 import AddClientScreen2 from './AddClientScreen2'
 import EditClientScreen from './EditClientScreen'
 import ViewClientScreen from './ViewClientScreen'
+import ItemsScreen from './ItemsScreen'
 import AddItemScreen from './AddItemScreen'
 import EditItemScreen from './EditItemScreen'
 import { useTheme } from '@react-navigation/native'
@@ -29,7 +33,7 @@ const HomeTabs = ({ navigation }) => {
 			screenOptions={{ headerShown: false }}
 			activeColor={theme.dark ? colors.text : colors.text2}
 			barStyle={{
-				backgroundColor: colors.background2
+				backgroundColor: colors.background2,
 			}}
 		>
 			<Tab.Screen
@@ -39,7 +43,7 @@ const HomeTabs = ({ navigation }) => {
 					tabBarLabel: 'Home',
 					tabBarIcon: ({ color }) => (
 						<Icon name='ios-home' color={color} size={26} />
-					)
+					),
 				}}
 			/>
 			<Tab.Screen
@@ -49,7 +53,7 @@ const HomeTabs = ({ navigation }) => {
 					tabBarLabel: 'Clients',
 					tabBarIcon: ({ color }) => (
 						<Icon name='ios-person' color={color} size={26} />
-					)
+					),
 				}}
 			/>
 			<Tab.Screen
@@ -63,7 +67,7 @@ const HomeTabs = ({ navigation }) => {
 							color={color}
 							size={26}
 						/>
-					)
+					),
 				}}
 			/>
 		</Tab.Navigator>
@@ -92,77 +96,92 @@ export default function MainStackScreen({ navigation }) {
 				name='HomeTabs'
 				component={HomeTabs}
 				options={{
-					title: 'Home'
+					title: 'Home',
 				}}
 			/>
-			{/* <Stack.Screen
-				name='Clients'
-				component={ClientsScreen}
-				options={{
-					title: 'Clients'
-				}}
-			/> */}
 			<Stack.Screen
 				name='ViewClient'
 				component={ViewClientScreen}
 				options={{
-					title: 'Client'
-				}}
-			/>
-			<Stack.Screen
-				name='AddClient'
-				component={AddClientScreen}
-				options={{
-					title: 'Add Client'
-				}}
-			/>
-			<Stack.Screen
-				name='EditClient'
-				component={EditClientScreen}
-				options={{
-					title: 'Edit Client'
-				}}
-			/>
-			{/* <Stack.Screen
-				name='Invoice'
-				component={InvoiceScreen}
-				options={{
-					title: 'Invoice'
-				}}
-			/> */}
-			<Stack.Screen
-				name='NewInvoice'
-				component={NewInvoiceScreen}
-				options={{
-					title: 'New Invoice'
+					title: 'Client',
 				}}
 			/>
 			<Stack.Screen
 				name='Clients2'
 				component={ClientsScreen2}
 				options={{
-					title: 'Clients'
+					title: 'Clients',
+				}}
+			/>
+			<Stack.Screen
+				name='Clients3'
+				component={ClientsScreen3}
+				options={{
+					title: 'Clients',
 				}}
 			/>
 			<Stack.Screen
 				name='AddClient2'
 				component={AddClientScreen2}
 				options={{
-					title: 'Add Client'
+					title: 'Add Client',
+				}}
+			/>
+			<Stack.Screen
+				name='AddClient'
+				component={AddClientScreen}
+				options={{
+					title: 'Add Client',
+				}}
+			/>
+			<Stack.Screen
+				name='EditClient'
+				component={EditClientScreen}
+				options={{
+					title: 'Edit Client',
+				}}
+			/>
+			<Stack.Screen
+				name='NewInvoice'
+				component={NewInvoiceScreen}
+				options={{
+					title: 'New Invoice',
+				}}
+			/>
+			<Stack.Screen
+				name='ViewInvoice'
+				component={ViewInvoiceScreen}
+				component={ViewInvoiceScreen}
+				options={{
+					title: 'Preview',
+				}}
+			/>
+			<Stack.Screen
+				name='EditInvoice'
+				component={EditInvoiceScreen}
+				options={{
+					title: 'New Invoice',
+				}}
+			/>
+			<Stack.Screen
+				name='Items'
+				component={ItemsScreen}
+				options={{
+					title: 'Items',
 				}}
 			/>
 			<Stack.Screen
 				name='AddItem'
 				component={AddItemScreen}
 				options={{
-					title: 'Add Item'
+					title: 'Add Item',
 				}}
 			/>
 			<Stack.Screen
 				name='EditItem'
 				component={EditItemScreen}
 				options={{
-					title: 'Edit Item'
+					title: 'Edit Item',
 				}}
 			/>
 		</Stack.Navigator>

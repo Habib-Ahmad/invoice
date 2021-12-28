@@ -16,8 +16,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const EditItemScreen = ({ navigation }) => {
-	const [items, setItems] = useState([])
-	// const [editItem, setEditItem] = useState({})
+	const [route, setRoute] = useState('')
 
 	const [validation, setValidation] = useState({
 		isValidName: true,
@@ -58,6 +57,14 @@ const EditItemScreen = ({ navigation }) => {
 		GetEditItem()
 	}, [])
 
+	useEffect(() => {
+		const GetPreviousScreem = async () => {
+			const routeName = await AsyncStorage.getItem('previousScreen')
+			setRoute(JSON.parse(routeName))
+		}
+		GetPreviousScreem()
+	}, [])
+
 	const onChangeText = (val, id) => {
 		setData({
 			...data,
@@ -79,25 +86,46 @@ const EditItemScreen = ({ navigation }) => {
 			})
 
 			let itemList = []
-			const newInvoiceItems = await AsyncStorage.getItem(
-				'newInvoiceItems'
-			)
-			const editItemName = await AsyncStorage.getItem('editItemName')
-			let index
+			if (route === 'NewInvoice') {
+				const newInvoiceItems = await AsyncStorage.getItem(
+					'newInvoiceItems'
+				)
+				const editItemName = await AsyncStorage.getItem('editItemName')
+				let index
 
-			itemList = JSON.parse(newInvoiceItems)
-			itemList.map(
-				(item) =>
-					item.name === editItemName &&
-					(index = itemList.indexOf(item))
-			)
-			itemList.splice(index, 1, data)
+				itemList = JSON.parse(newInvoiceItems)
+				itemList.map(
+					(item) =>
+						item.name === editItemName &&
+						(index = itemList.indexOf(item))
+				)
+				itemList.splice(index, 1, data)
 
-			await AsyncStorage.setItem(
-				'newInvoiceItems',
-				JSON.stringify(itemList)
-			)
-			navigation.navigate('NewInvoice')
+				await AsyncStorage.setItem(
+					'newInvoiceItems',
+					JSON.stringify(itemList)
+				)
+			} else if (route === 'EditInvoice') {
+				const editInvoiceItems = await AsyncStorage.getItem(
+					'editInvoiceItems'
+				)
+				const editItemName = await AsyncStorage.getItem('editItemName')
+				let index
+
+				itemList = JSON.parse(editInvoiceItems)
+				itemList.map(
+					(item) =>
+						item.name === editItemName &&
+						(index = itemList.indexOf(item))
+				)
+				itemList.splice(index, 1, data)
+
+				await AsyncStorage.setItem(
+					'editInvoiceItems',
+					JSON.stringify(itemList)
+				)
+			}
+			navigation.goBack()
 		} else {
 			let nameStatus = validation.isValidName
 			let rateStatus = validation.isValidRate
