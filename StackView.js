@@ -1,6 +1,6 @@
 import React from 'react';
-import MainStackScreen from './screens/MainStackScreen';
-import RootStackScreen from './screens/RootStackScreen';
+import MainStackScreen from './screens/stacks/MainStackScreen';
+import RootStackScreen from './screens/stacks/RootStackScreen';
 import { useAuthContext } from './context/context';
 
 const StackView = () => {
