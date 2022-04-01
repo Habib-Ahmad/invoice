@@ -97,7 +97,7 @@ const ViewInvoice = ({ navigation }) => {
                 console.log(err.message);
               });
 
-            navigation.navigate('Invoice');
+            navigation.goBack();
           },
         },
       ],
@@ -109,7 +109,7 @@ const ViewInvoice = ({ navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => navigation.navigate('Invoice')}
+          onPress={() => navigation.goBack()}
         >
           <Icon
             style={{ marginRight: 15 }}
